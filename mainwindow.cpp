@@ -23,6 +23,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->file_edit->setText( QDir::homePath() + "/.ssh/id_key" );
 
     ui->bit_edit->setValidator( new QIntValidator( 256,8192,this ) );
+    this->setFixedHeight( 195 ); //i know its bad idea...
+
+    //setup qprocess
+    ssh_process = new QProcess( this );
+    connect( ssh_process,SIGNAL( readyRead() ),this,SLOT( std_out() )  ); //when there some text in output,
+    connect( ssh_process,SIGNAL( finished( int ) ),this,SLOT( finished( int ) ) );
+    ssh_process->setProgram( "ssh-keygen" );
+
+    ui->std_console->setStyleSheet( "QPlainTextEdit { background-color: #2F2F2F; color: #ADADAD; }" );
 }
 
 MainWindow::~MainWindow()
@@ -30,15 +39,15 @@ MainWindow::~MainWindow()
     if( ssh_process->state() == QProcess::Running ){
         ssh_process->kill();
     }
-
+    delete ssh_process;
     delete ui;
 }
 
+//
 void MainWindow::generate_clicked(){
 
     ui->std_console->clear();
 
-    ssh_process = new QProcess( this );
     QStringList* argument_list = new QStringList();
 
     *argument_list << "-t" << ui->typeBox->itemText( ui->typeBox->currentIndex() );
@@ -70,12 +79,11 @@ void MainWindow::generate_clicked(){
         *argument_list << "-C" << ui->comment_edit->text();
     }
 
-    connect( ssh_process,SIGNAL( readyRead() ),this,SLOT( std_out() )  ); //when there some text in output,
-    connect( ssh_process,SIGNAL( finished( int ) ),this,SLOT( finished( int ) ) );
-
     ui->generate_but->setDisabled( true ); //dont touch while working!!!
 
-    ssh_process->start( "ssh-keygen",*argument_list );
+    ssh_process->setArguments( *argument_list );
+    ssh_process->start();
+
     this->setFixedHeight( 447 );  //show console
 
     delete argument_list;
@@ -108,7 +116,6 @@ void MainWindow::finished( int exit_code ){
 
     ui->std_console->insertPlainText( "Process finished with code " + QString::number( exit_code ));
     std_output.clear();
-    delete ssh_process;
 }
 
 void MainWindow::select_file(){
