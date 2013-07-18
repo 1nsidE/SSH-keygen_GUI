@@ -24,7 +24,6 @@ public:
 private:
     Ui::MainWindow *ui;
     QProcess* ssh_process;
-    QString default_path;
     QString std_output;
     int selected;
 

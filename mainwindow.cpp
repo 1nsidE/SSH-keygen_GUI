@@ -3,7 +3,6 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), selected( 0 )
 {
-
     //create necessary slot/signal connections
     ui->setupUi(this);
     connect( ui->cancel_but,SIGNAL( clicked() ),this,SLOT(close()) );
@@ -12,21 +11,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect( ui->typeBox,SIGNAL( currentIndexChanged(int) ),this,SLOT( type_changed( int ) ) );
 
     //fill combobox
-    QStringList* type_list = new QStringList();
-    type_list->append( "rsa" );
-    type_list->append( "dsa" );
-    ui->typeBox->addItems( *type_list );
+    QStringList type_list;
+    type_list.append( "rsa" );
+    type_list.append( "dsa" );
+    ui->typeBox->addItems( type_list );
 
     //etc
     ui->pass_edit->setEchoMode( QLineEdit::Password );
     ui->confirm_edit->setEchoMode( QLineEdit::Password );
 
-    default_path = QDir::homePath() + "/.ssh/id_key";
-    ui->file_edit->setText( default_path );
+    ui->file_edit->setText( QDir::homePath() + "/.ssh/id_key" );
 
     ui->bit_edit->setValidator( new QIntValidator( 256,8192,this ) );
-
-    delete type_list;
 }
 
 MainWindow::~MainWindow()
@@ -86,12 +82,12 @@ void MainWindow::generate_clicked(){
 }
 
 void MainWindow::std_out(){
-    std_output = ssh_process->readAll(); //read ssh_keygen output
+    std_output = ssh_process->readAll(); //read ssh-keygen output
 
     ui->std_console->insertPlainText( std_output ); //show in "console"
 
     if( std_output.contains( "Overwrite (y/n)? " ) ){ //if file already exist
-        if( !selected ){ //because fileSelect dialog quering overwrite, i check only when file isnt selected by fileDialog or overwrite without select
+        if( !selected ){ //because fileSelect dialog quering overwrite, i check only when file isnt selected by fileDialog
              if( QMessageBox::warning( this,"Overwrite?","Overwrite existing file?",QMessageBox::Yes,QMessageBox::No ) == QMessageBox::No ){
                 ssh_process->write( "n\n" );
                 ssh_process->waitForBytesWritten();
