@@ -23,7 +23,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->file_edit->setText( QDir::homePath() + "/.ssh/id_key" );
 
     ui->bit_edit->setValidator( new QIntValidator( 256,8192,this ) );
-    this->setFixedHeight( 195 ); //i know its bad idea...
 
     //setup qprocess
     ssh_process = new QProcess( this );
@@ -32,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ssh_process->setProgram( "ssh-keygen" );
 
     ui->std_console->setStyleSheet( "QPlainTextEdit { background-color: #2F2F2F; color: #ADADAD; }" );
+    ui->std_console->insertPlainText( "Ready" );
 }
 
 MainWindow::~MainWindow()
@@ -83,8 +83,6 @@ void MainWindow::generate_clicked(){
 
     ssh_process->setArguments( *argument_list );
     ssh_process->start();
-
-    this->setFixedHeight( 447 );  //show console
 
     delete argument_list;
 }
